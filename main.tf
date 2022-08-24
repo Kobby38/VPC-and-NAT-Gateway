@@ -104,3 +104,23 @@ resource "aws_route" "public-igw-route" {
   gateway_id                = aws_internet_gateway.IGW.id  
   destination_cidr_block    = "0.0.0.0/0"
   }
+
+  # Nat Gateway for internet through the public subnet
+
+resource "aws_eip" "EIP_for_NG" {
+  vpc                       = true
+  associate_with_private_ip = "10.0.0.6"
+  }
+
+resource "aws_nat_gateway" "KobbysNGW" {
+  allocation_id = aws_eip.EIP_for_NG.id
+  subnet_id     = aws_subnet.public_sub1.id
+ }
+ 
+# Route NAT GW with private Route table
+resource "aws_route" "NatGW-association_with-private_RT" {
+  route_table_id         = aws_route_table.private-route-table.id
+  nat_gateway_id         = aws_nat_gateway.KobbysNGW.id
+  destination_cidr_block = "0.0.0.0/0"
+
+}
